@@ -21,7 +21,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const spotsLeft = details.max_participants - details.participants.length;
 
         const participantsList = details.participants
-          .map(participant => `<li>${participant}</li>`)
+          .map(participant => `
+            <li style="list-style-type: none;">
+              ${participant}
+              <button class="delete-participant" data-activity="${name}" data-participant="${participant}">❌</button>
+            </li>
+          `)
           .join("");
 
         activityCard.innerHTML = `
@@ -42,6 +47,35 @@ document.addEventListener("DOMContentLoaded", () => {
         option.value = name;
         option.textContent = name;
         activitySelect.appendChild(option);
+      });
+
+      // Add event listener for delete buttons
+      activitiesList.addEventListener("click", async (event) => {
+        if (event.target.classList.contains("delete-participant")) {
+          const button = event.target;
+          const activityName = button.getAttribute("data-activity");
+          const participant = button.getAttribute("data-participant");
+
+          try {
+            const response = await fetch(
+              `/activities/${encodeURIComponent(activityName)}/unregister?email=${encodeURIComponent(participant)}`,
+              {
+                method: "DELETE",
+              }
+            );
+
+            if (response.ok) {
+              alert(`${participant} has been unregistered from ${activityName}`);
+              fetchActivities(); // Refresh the activities list
+            } else {
+              const result = await response.json();
+              alert(result.detail || "Failed to unregister participant.");
+            }
+          } catch (error) {
+            console.error("Error unregistering participant:", error);
+            alert("An error occurred. Please try again.");
+          }
+        }
       });
     } catch (error) {
       activitiesList.innerHTML = "<p>Failed to load activities. Please try again later.</p>";
