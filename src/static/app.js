@@ -83,6 +83,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  async function fetchActivitiesAndUpdateUI() {
+    await fetchActivities();
+    updateActivityDropdown();
+  }
+
+  function updateActivityDropdown() {
+    const activitySelect = document.getElementById("activity");
+    activitySelect.innerHTML = '<option value="">-- Select an activity --</option>';
+
+    Object.entries(activities).forEach(([name]) => {
+      const option = document.createElement("option");
+      option.value = name;
+      option.textContent = name;
+      activitySelect.appendChild(option);
+    });
+  }
+
   // Handle form submission
   signupForm.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -104,6 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
         messageDiv.textContent = result.message;
         messageDiv.className = "success";
         signupForm.reset();
+        await fetchActivitiesAndUpdateUI(); // Refresh the activities list and dropdown
       } else {
         messageDiv.textContent = result.detail || "An error occurred";
         messageDiv.className = "error";
